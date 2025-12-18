@@ -176,6 +176,11 @@ b <- heart_load_bundle()
 ```
 
 ⸻
+## Model Performance
+
+The following figure summarises test-set performance of three classifiers (Logistic, Full RF, TopK RF), including Accuracy/AUROC/AUPRC and ROC curves.
+
+![](man/extdata/Fig/ROC:PRC.png)
 
 # Model Evaluation
 
@@ -241,27 +246,27 @@ A Shiny deployment reusing the same prediction logic is available at:
 
 ⸻
 
-URLs
+# URLs
 	•	Kaggle dataset: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data
 	•	Shiny app: https://905341291guo.shinyapps.io/heart_prediction/
-	•	GitHub repository: <YOUR_GITHUB_URL_HERE>
+	•	GitHub repository: https://github.com/tian233-bot/heartPredictionR
 
 ⸻
 
-License
+# License
 
 MIT License.
 
 ⸻
 
-Citation
+# Citation
 
 If you use this package in reports or coursework, cite:
 
-heartPredictionR (2025). Heart Disease Risk Prediction with Machine Learning. GitHub: <YOUR_GITHUB_URL_HERE>
+heartPredictionR (2025). Heart Disease Risk Prediction with Machine Learning. GitHub: https://github.com/tian233-bot/heartPredictionR
 
 ⸻
 
-Contact
+# Contact
 
-Issues and feature requests: <YOUR_GITHUB_URL_HERE>/issues
+Issues and feature requests: https://github.com/tian233-bot/heartPredictionR/issues
