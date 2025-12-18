@@ -1,6 +1,6 @@
-heartPredictionR – Heart Disease Risk Prediction with Machine Learning
+# heartPredictionR – Heart Disease Risk Prediction with Machine Learning
 
-Overview
+## Overview
 
 heartPredictionR provides a reproducible interface for predicting heart disease risk from routine clinical features using a pre-trained machine learning model bundle shipped with the package.
 
@@ -13,7 +13,7 @@ The package is designed for deployment-style usage:
 
 ⸻
 
-Dataset
+## Dataset
 
 The package is built around the Kaggle dataset Heart Failure Prediction (September 2021), curated by combining five classic heart disease datasets under 11 common predictors.
 	•	Dataset URL: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data
@@ -40,55 +40,60 @@ Main predictors:
 
 ⸻
 
-Installation
+## Installation
 
 You can install the package from GitHub with either remotes or devtools.
 
+```r
 # Use remotes
 install.packages("remotes")
 remotes::install_github("tian233-bot/heartPredictionR")
+```
 
+``` r
 # Or use devtools
 install.packages("devtools")
 devtools::install_github("tian233-bot/heartPredictionR")
+```
 
 Then load the package:
 
+```r
 library(heartPredictionR)
-
+```
 System requirements: R (>= 4.1.0 recommended)
 Imported packages are listed in DESCRIPTION.
 
 ⸻
 
-Quick Start (Prediction Workflow)
+# Quick Start (Prediction Workflow)
 
-1. Load the bundled model
-
+## 1. Load the bundled model
+```r
 library(heartPredictionR)
 
 b <- heart_load_bundle()
 names(b)
-
-2. Predict one patient (class label)
+```
+## 2. Predict one patient (class label)
 
 heart_predict() returns the class label (coursework-style output).
-
+```r
 new_pat <- data.frame(
   Age=54, Sex="M", ChestPainType="ATA", RestingBP=140, Cholesterol=289, FastingBS="0",
   RestingECG="Normal", MaxHR=172, ExerciseAngina="N", Oldpeak=0.0, ST_Slope="Up"
 )
 
 heart_predict(new_pat, bundle = b, model = "topk")
-
-3. Predict probability of Presence
+```
+## 3. Predict probability of Presence
 
 heart_predict_proba() returns the predicted probability of the positive class.
-
+```r
 heart_predict_proba(new_pat, bundle = b, model = "topk")
-
-4. Batch prediction (multiple rows)
-
+```
+## 4. Batch prediction (multiple rows)
+```r
 new_patients <- data.frame(
   Age=c(54, 63),
   Sex=c("M","F"),
@@ -105,21 +110,21 @@ new_patients <- data.frame(
 
 heart_predict(new_patients, bundle = b, model = "topk")
 heart_predict_proba(new_patients, bundle = b, model = "topk")
-
+```
 
 ⸻
 
-Example Data Shipped with the Package
+# Example Data Shipped with the Package
 
 A small CSV template is included under inst/extdata/ for quick testing.
-
+```r
 example_path <- system.file("extdata", "heart_example_input.csv", package = "heartPredictionR")
 example_df <- read.csv(example_path)
 
 head(example_df)
-
+```
 Run predictions:
-
+```
 b <- heart_load_bundle()
 
 pred_class <- heart_predict(example_df, b, model = "topk")
@@ -127,11 +132,11 @@ table(pred_class)
 
 pred_prob <- heart_predict_proba(example_df, b, model = "topk")
 head(pred_prob)
-
+```
 
 ⸻
 
-Input Schema
+# Input Schema
 
 Required columns (prediction-time schema):
 	•	Age (numeric)
@@ -153,7 +158,7 @@ The package automatically adds engineered features for robustness:
 
 ⸻
 
-Model Bundle and Reproducibility
+# Model Bundle and Reproducibility
 
 The package ships with a pre-trained model bundle file:
 	•	inst/extdata/heart_models_bundle.rds
@@ -166,16 +171,16 @@ It contains:
 	•	optional evaluation table (results_df) if included during training
 
 Load it at runtime using:
-
+```r
 b <- heart_load_bundle()
-
+```
 
 ⸻
 
-Model Evaluation (Optional)
+# Model Evaluation
 
 If your bundle contains a labelled dataset (e.g., b$test_df with HeartDisease), you can compute summary metrics.
-
+```r
 library(heartPredictionR)
 
 b <- heart_load_bundle()
@@ -195,22 +200,22 @@ if (!is.null(b$test_df) && "HeartDisease" %in% names(b$test_df)) {
 
   ev
 }
-
+```
 Calibration bins + ECE:
-
+```r
 if (!is.null(b$test_df) && "HeartDisease" %in% names(b$test_df)) {
   cal <- heart_calibration(y_true = y, prob_pos = prob, positive_level = b$positive_level, bins = 10)
   cal$ece
   cal$cal_df
 }
-
+```
 
 ⸻
 
-Model Interpretation (Optional)
+# Model Interpretation 
 
 Permutation feature importance for a Random Forest model:
-
+```r
 library(heartPredictionR)
 
 b <- heart_load_bundle()
@@ -225,11 +230,11 @@ if (!is.null(b$rf_full_cv)) {
     p
   }
 }
-
+```
 
 ⸻
 
-Shiny Application
+# Shiny Application
 
 A Shiny deployment reusing the same prediction logic is available at:
 	•	Shiny URL: https://905341291guo.shinyapps.io/heart_prediction/
