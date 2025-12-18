@@ -254,8 +254,7 @@ A Shiny deployment reusing the same prediction logic is available at:
 
 
 # License
-
-MIT License.
+MIT + file LICENSE
 
 
 
