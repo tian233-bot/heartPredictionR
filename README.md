@@ -11,7 +11,7 @@ The package is designed for deployment-style usage:
 	•	users call high-level predict functions on new data
 	•	the same prediction logic can be reused in a Shiny application or other R workflows
 
-⸻
+
 
 ## Dataset
 
@@ -38,7 +38,7 @@ Main predictors:
 	•	Oldpeak (ST depression)
 	•	ST_Slope (Up/Flat/Down)
 
-⸻
+
 
 ## Installation
 
@@ -64,7 +64,7 @@ library(heartPredictionR)
 System requirements: R (>= 4.1.0 recommended)
 Imported packages are listed in DESCRIPTION.
 
-⸻
+
 
 # Quick Start (Prediction Workflow)
 
@@ -112,7 +112,7 @@ heart_predict(new_patients, bundle = b, model = "topk")
 heart_predict_proba(new_patients, bundle = b, model = "topk")
 ```
 
-⸻
+
 
 # Example Data Shipped with the Package
 
@@ -134,7 +134,7 @@ pred_prob <- heart_predict_proba(example_df, b, model = "topk")
 head(pred_prob)
 ```
 
-⸻
+
 
 # Input Schema
 
@@ -156,7 +156,7 @@ The package automatically adds engineered features for robustness:
 	•	high_bp_flag
 	•	high_chol_flag
 
-⸻
+
 
 # Model Bundle and Reproducibility
 
@@ -175,7 +175,7 @@ Load it at runtime using:
 b <- heart_load_bundle()
 ```
 
-⸻
+
 ## Model Performance
 
 The following figure summarises test-set performance of three classifiers (Logistic, Full RF, TopK RF), including Accuracy/AUROC/AUPRC and ROC curves.
@@ -215,7 +215,7 @@ if (!is.null(b$test_df) && "HeartDisease" %in% names(b$test_df)) {
 }
 ```
 
-⸻
+
 
 # Model Interpretation 
 
@@ -237,27 +237,27 @@ if (!is.null(b$rf_full_cv)) {
 }
 ```
 
-⸻
+
 
 # Shiny Application
 
 A Shiny deployment reusing the same prediction logic is available at:
 	•	Shiny URL: https://905341291guo.shinyapps.io/heart_prediction/
 
-⸻
+
 
 # URLs
 	•	Kaggle dataset: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data
 	•	Shiny app: https://905341291guo.shinyapps.io/heart_prediction/
 	•	GitHub repository: https://github.com/tian233-bot/heartPredictionR
 
-⸻
+
 
 # License
 
 MIT License.
 
-⸻
+
 
 # Citation
 
@@ -265,7 +265,6 @@ If you use this package in reports or coursework, cite:
 
 heartPredictionR (2025). Heart Disease Risk Prediction with Machine Learning. GitHub: https://github.com/tian233-bot/heartPredictionR
 
-⸻
 
 # Contact
 
