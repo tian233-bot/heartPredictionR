@@ -7,36 +7,36 @@ heartPredictionR provides a reproducible interface for predicting heart disease 
 Disclaimer: This R package is for educational and research purposes only and must not be used for real clinical decision making.
 
 The package is designed for deployment-style usage:
-	•	a pre-trained bundle (.rds) is loaded from inst/extdata/
-	•	users call high-level predict functions on new data
-	•	the same prediction logic can be reused in a Shiny application or other R workflows
+	- a pre-trained bundle (.rds) is loaded from inst/extdata/
+	- users call high-level predict functions on new data
+	- the same prediction logic can be reused in a Shiny application or other R workflows
 
 
 
 ## Dataset
 
 The package is built around the Kaggle dataset Heart Failure Prediction (September 2021), curated by combining five classic heart disease datasets under 11 common predictors.
-	•	Dataset URL: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data
-	•	Samples: 918
-	•	Predictors: 11 clinical features
-	•	Target: HeartDisease (binary)
+	- Dataset URL: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data
+	- Samples: 918
+	- Predictors: 11 clinical features
+	- Target: HeartDisease (binary)
 
 Target definition (class labels used by this package):
-	•	Presence – heart disease present (positive class)
-	•	Absence – heart disease absent (negative class)
+	- Presence – heart disease present (positive class)
+	- Absence – heart disease absent (negative class)
 
 Main predictors:
-	•	Age (years)
-	•	Sex (M/F)
-	•	ChestPainType (TA/ATA/NAP/ASY)
-	•	RestingBP (mm Hg)
-	•	Cholesterol (mg/dl)
-	•	FastingBS (0/1)
-	•	RestingECG (Normal/ST/LVH)
-	•	MaxHR (60–202)
-	•	ExerciseAngina (Y/N)
-	•	Oldpeak (ST depression)
-	•	ST_Slope (Up/Flat/Down)
+	- Age (years)
+	- Sex (M/F)
+	- ChestPainType (TA/ATA/NAP/ASY)
+	- RestingBP (mm Hg)
+	- Cholesterol (mg/dl)
+	- FastingBS (0/1)
+	- RestingECG (Normal/ST/LVH)
+	- MaxHR (60–202)
+	- ExerciseAngina (Y/N)
+	- Oldpeak (ST depression)
+	- ST_Slope (Up/Flat/Down)
 
 
 
@@ -139,22 +139,22 @@ head(pred_prob)
 # Input Schema
 
 Required columns (prediction-time schema):
-	•	Age (numeric)
-	•	Sex (categorical)
-	•	ChestPainType (categorical)
-	•	RestingBP (numeric)
-	•	Cholesterol (numeric)
-	•	FastingBS (categorical)
-	•	RestingECG (categorical)
-	•	MaxHR (numeric)
-	•	ExerciseAngina (categorical)
-	•	Oldpeak (numeric)
-	•	ST_Slope (categorical)
+	- Age (numeric)
+	- Sex (categorical)
+	- ChestPainType (categorical)
+	- RestingBP (numeric)
+	- Cholesterol (numeric)
+	- FastingBS (categorical)
+	- RestingECG (categorical)
+	- MaxHR (numeric)
+	- ExerciseAngina (categorical)
+	- Oldpeak (numeric)
+	- ST_Slope (categorical)
 
 The package automatically adds engineered features for robustness:
-	•	age_decade
-	•	high_bp_flag
-	•	high_chol_flag
+	- age_decade
+	- high_bp_flag
+	- high_chol_flag
 
 
 
@@ -169,11 +169,11 @@ system.file("extdata", "heart_models_bundle.rds", package = "heartPredictionR")
 ```
 
 It contains:
-	•	trained model objects
-	•	the required input schema
-	•	factor level dictionary (training-time categories)
-	•	recommended thresholds (OOF-derived)
-	•	optional evaluation table (results_df) if included during training
+	- trained model objects
+	- the required input schema
+	- factor level dictionary (training-time categories)
+	- recommended thresholds (OOF-derived)
+	- optional evaluation table (results_df) if included during training
 
 Load it at runtime using:
 ```r
@@ -243,14 +243,14 @@ if (requireNamespace("vip", quietly = TRUE) && !is.null(b$rf_full_cv)) {
 # Shiny Application
 
 A Shiny deployment reusing the same prediction logic is available at:
-	•	Shiny URL: https://905341291guo.shinyapps.io/heart_prediction/
+	- Shiny URL: https://905341291guo.shinyapps.io/heart_prediction/
 
 
 
 # URLs
-	•	Kaggle dataset: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data
-	•	Shiny app: https://905341291guo.shinyapps.io/heart_prediction/
-	•	GitHub repository: https://github.com/tian233-bot/heartPredictionR
+	- Kaggle dataset: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data
+	- Shiny app: https://905341291guo.shinyapps.io/heart_prediction/
+	- GitHub repository: https://github.com/tian233-bot/heartPredictionR
 
 
 
