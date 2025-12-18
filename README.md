@@ -180,7 +180,7 @@ b <- heart_load_bundle()
 
 The following figure summarises test-set performance of three classifiers (Logistic, Full RF, TopK RF), including Accuracy/AUROC/AUPRC and ROC curves.
 
-![](man/extdata/Fig/ROC:PRC.png)
+![](extdata/Fig/ROC:PRC.png)
 
 # Model Evaluation
 
