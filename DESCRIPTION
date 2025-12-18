@@ -1,0 +1,62 @@
+Package: heartPrediction
+Type: Package
+Title: Heart Disease Prediction with Reproducible Machine Learning Models
+Version: 1.0.0
+Authors@R:
+    person("Haotian", "Guo", email = "Haotian.Guo23@student.xjtlu.edu.cn",
+           role = c("aut", "cre"))
+Description: 
+    heartPredictR provides a reproducible prediction toolkit for
+    heart disease risk classification from tabular patient features, including
+    demographics, symptoms, vital signs, and ECG/exercise-related indicators.
+    The package ships a pre-trained model bundle and exposes deployment-safe
+    APIs for inference and reporting. It wraps the workflow, including:
+    (i) input validation, type coercion, and feature engineering for new data
+        (age decade, high blood pressure flag, high cholesterol flag);
+    (ii) loading a packaged model bundle containing trained classifiers and
+         preprocessing objects;
+    (iii) threshold-based prediction on new data, returning class labels
+          (Presence/Absence) and optional positive-class probabilities, with
+          support for multiple model backends (TopK random forest, full random
+          forest, and regularised logistic regression via glmnet);
+    (iv) model evaluation at fixed thresholds, including accuracy, precision,
+         recall, F1-score, AUROC/AUPRC (if available), and Brier score;
+    (v) calibration diagnostics using binned calibration tables and expected
+        calibration error (ECE);
+    (vi) model interpretation via feature importance, including permutation
+         importance for random forests and aggregated absolute coefficients for
+         one-hot encoded glmnet models;
+    (vii) model comparison utilities that summarise performance across multiple
+          metrics on labelled datasets.
+    Disclaimer: This package is intended for educational and research
+    demonstration only, and must not be used for real clinical decision making.
+License: MIT + file LICENSE
+Depends: R (>= 3.5.0)
+Imports:
+    tibble,
+    dplyr,
+    tidyr,
+    ggplot2,
+    forcats,
+    stringr,
+    caret,
+    recipes,
+    ranger,
+    vip,
+    glmnet,
+    stats,
+    utils
+Suggests:
+    pROC,
+    PRROC,
+    fastshap,
+    shapviz,
+    knitr,
+    rmarkdown,
+    testthat
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+URL: https://github.com/tian233-bot/heartPredictR
+BugReports: https://github.com/tian233-bot/heartPredictR/issues

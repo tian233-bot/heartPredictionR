@@ -1,0 +1,5 @@
+^README\.Rmd$
+^scripts$
+^outputs$
+^.*\.Rproj$
+^\.Rproj\.user$
