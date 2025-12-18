@@ -124,7 +124,7 @@ example_df <- read.csv(example_path)
 head(example_df)
 ```
 Run predictions:
-```
+```r
 b <- heart_load_bundle()
 
 pred_class <- heart_predict(example_df, b, model = "topk")
@@ -217,6 +217,7 @@ if (!is.null(b$test_df) && "HeartDisease" %in% names(b$test_df)) {
 # Model Interpretation 
 
 Permutation feature importance for a Random Forest model:
+Note: Feature-importance utilities rely on `vip` and require a fitted model object supported by `vip::vi()` (e.g., `ranger`).
 ```r
 library(heartPredictionR)
 
@@ -235,7 +236,6 @@ if (requireNamespace("vip", quietly = TRUE) && !is.null(b$rf_full_cv)) {
     heart_plot_importance(imp, title = "Full RF Feature Importance", ylab = "Permutation importance")
   }
 }
-#Note: Feature-importance utilities rely on `vip` and require a fitted model object supported by `vip::vi()` (e.g., `ranger`).
 ```
 
 
