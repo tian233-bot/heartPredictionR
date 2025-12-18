@@ -21,9 +21,9 @@ The package is built around the Kaggle dataset Heart Failure Prediction (Septemb
 	•	Predictors: 11 clinical features
 	•	Target: HeartDisease (binary)
 
-Target definition:
-	•	Presence – heart disease present
-	•	Absence – heart disease absent
+Target definition (class labels used by this package):
+	•	Presence – heart disease present (positive class)
+	•	Absence – heart disease absent (negative class)
 
 Main predictors:
 	•	Age (years)
@@ -160,8 +160,13 @@ The package automatically adds engineered features for robustness:
 
 # Model Bundle and Reproducibility
 
-The package ships with a pre-trained model bundle file:
-	•	inst/extdata/heart_models_bundle.rds
+The package ships with a pre-trained model bundle (`.rds`) and loads it at runtime via `heart_load_bundle()`.
+
+Bundle location inside the installed package:
+
+```r
+system.file("extdata", "heart_models_bundle.rds", package = "heartPredictionR")
+```
 
 It contains:
 	•	trained model objects
@@ -182,21 +187,17 @@ The following figure summarises test-set performance of three classifiers (Logis
 
 ![](extdata/Fig/ROC:PRC.png)
 
-# Model Evaluation
+# Model Evaluation+Calibration
 
 If your bundle contains a labelled dataset (e.g., b$test_df with HeartDisease), you can compute summary metrics.
 ```r
 library(heartPredictionR)
-
 b <- heart_load_bundle()
-
 if (!is.null(b$test_df) && "HeartDisease" %in% names(b$test_df)) {
-
   df <- b$test_df
   y  <- df$HeartDisease
   x  <- df
   x$HeartDisease <- NULL
-
   prob <- heart_predict_proba(x, b, model = "topk")
 
   # Evaluate using the stored threshold
@@ -204,11 +205,7 @@ if (!is.null(b$test_df) && "HeartDisease" %in% names(b$test_df)) {
   ev  <- heart_eval_threshold(y_true = y, prob_pos = prob, threshold = thr, positive_level = b$positive_level)
 
   ev
-}
-```
-Calibration bins + ECE:
-```r
-if (!is.null(b$test_df) && "HeartDisease" %in% names(b$test_df)) {
+  # Calibration bins + ECE
   cal <- heart_calibration(y_true = y, prob_pos = prob, positive_level = b$positive_level, bins = 10)
   cal$ece
   cal$cal_df
@@ -225,16 +222,20 @@ library(heartPredictionR)
 
 b <- heart_load_bundle()
 
-# Full RF permutation importance (if present)
-if (!is.null(b$rf_full_cv)) {
-  rf_model <- b$rf_full_cv
-  # caret stores the final model in $finalModel for many trainers
-  if (!is.null(rf_model$finalModel)) {
-    imp <- heart_importance_rf(rf_model$finalModel, top_n = 15)
-    p   <- heart_plot_importance(imp, title = "Full RF Feature Importance", ylab = "Permutation importance")
-    p
+# Feature importance requires vip and a model supported by vip::vi() (e.g., ranger).
+if (requireNamespace("vip", quietly = TRUE) && !is.null(b$rf_full_cv)) {
+
+  rf_fit <- b$rf_full_cv
+
+  # caret models often store the underlying model at $finalModel
+  ranger_model <- rf_fit$finalModel
+  if (!is.null(ranger_model)) {
+
+    imp <- heart_importance_rf(ranger_model, top_n = 15)
+    heart_plot_importance(imp, title = "Full RF Feature Importance", ylab = "Permutation importance")
   }
 }
+#Note: Feature-importance utilities rely on `vip` and require a fitted model object supported by `vip::vi()` (e.g., `ranger`).
 ```
 
 
