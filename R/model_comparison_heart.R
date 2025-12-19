@@ -1,14 +1,24 @@
-#' Compare the shipped models on a labelled dataset
+#' Compare models on a labelled dataset
 #'
-#' @param df A data.frame containing predictors and a HeartDisease column.
-#' @param bundle A bundle from [heart_load_bundle()].
-#' @return A tibble of metrics per model using thresholds stored in the bundle.
+#' This utility predicts probabilities using all supported models and returns a
+#' compact performance table at bundle-recommended thresholds.
+#'
+#' @param df data.frame containing predictors and a \code{HeartDisease} column.
+#' @param bundle model bundle.
+#' @return tibble of metrics per model.
+#' @examples
+#' b <- heart_load_bundle()
+#' df <- heart_example_data(include_outcome = TRUE, n = 100)
+#' # Convert HeartDisease (0/1) to Presence/Absence for evaluation:
+#' df$HeartDisease <- ifelse(df$HeartDisease == 1, b$positive_level, b$negative_level)
+#' df$HeartDisease <- factor(df$HeartDisease, levels = c(b$positive_level, b$negative_level))
+#' heart_compare_models(df, bundle = b)
 #' @export
 heart_compare_models <- function(df, bundle = heart_load_bundle()) {
   pos <- bundle$positive_level %||% "Presence"
   neg <- bundle$negative_level %||% "Absence"
 
-  if (!("HeartDisease" %in% names(df))) stop("df must include HeartDisease column for comparison.")
+  if (!("HeartDisease" %in% names(df))) stop("df must include HeartDisease for comparison.")
   y <- factor(as.character(df$HeartDisease), levels = c(pos, neg))
 
   x <- df

@@ -1,9 +1,15 @@
 #' Heart prediction feature engineering (deployment-safe)
 #'
-#' Adds engineered features used by the trained models:
-#' `age_decade`, `high_bp_flag`, `high_chol_flag`.
+#' Suggests three engineered features that are simple, interpretable, and stable:
+#' \itemize{
+#'   \item \code{age_decade}: age binned to decades
+#'   \item \code{high_bp_flag}: 1 if \code{RestingBP >= 140} mm Hg, else 0
+#'   \item \code{high_chol_flag}: 1 if \code{Cholesterol >= 240} mg/dl, else 0
+#' }
 #'
-#' @param df A data.frame / tibble with at least Age, RestingBP, Cholesterol.
+#' This function does not modify your original variables beyond numeric coercion.
+#'
+#' @param df A data.frame / tibble with at least \code{Age}, \code{RestingBP}, \code{Cholesterol}.
 #' @return A tibble with engineered columns appended.
 #' @export
 heart_add_features <- function(df) {
@@ -16,20 +22,19 @@ heart_add_features <- function(df) {
   dplyr::mutate(
     df,
     age_decade     = floor(.data$Age / 10) * 10,
-    high_bp_flag   = dplyr::if_else(.data$RestingBP >= 140, 1, 0),
-    high_chol_flag = dplyr::if_else(.data$Cholesterol >= 240, 1, 0)
+    high_bp_flag   = dplyr::if_else(.data$RestingBP >= 140, 1L, 0L),
+    high_chol_flag = dplyr::if_else(.data$Cholesterol >= 240, 1L, 0L)
   )
 }
 
 #' Coerce raw inputs to model-friendly types
 #'
-#' Designed to make `recipes::bake()` stable in deployment:
-#' numeric columns are forced to numeric (fail-fast if NA introduced),
-#' categorical columns are forced to character (recipe will handle levels).
+#' Numeric columns are coerced to numeric (hard fail if NA is introduced).
+#' Categorical columns are coerced to character. (The model/recipe will handle factorisation.)
 #'
 #' @param df data.frame of predictors.
-#' @param numeric_cols numeric feature names.
-#' @param cat_cols categorical feature names.
+#' @param numeric_cols Numeric feature names.
+#' @param cat_cols Categorical feature names.
 #' @return A tibble with coerced columns.
 #' @export
 heart_coerce_inputs <- function(
@@ -43,12 +48,10 @@ heart_coerce_inputs <- function(
     df[[cc]] <- suppressWarnings(as.numeric(df[[cc]]))
     if (anyNA(df[[cc]])) {
       bad <- which(is.na(df[[cc]]))
-      stop(sprintf("Non-numeric or missing value in '%s' at row(s): %s",
-                   cc, paste(bad, collapse = ",")))
+      stop(sprintf("Non-numeric or missing value in '%s' at row(s): %s", cc, paste(bad, collapse = ",")))
     }
   }
 
-  # Force categorical predictors to character to avoid bake() factor warnings
   for (cc in intersect(cat_cols, names(df))) {
     df[[cc]] <- as.character(df[[cc]])
   }
@@ -59,8 +62,8 @@ heart_coerce_inputs <- function(
 #' Validate that required columns exist
 #'
 #' @param df data.frame.
-#' @param required required column names.
-#' @return invisible(TRUE) or error.
+#' @param required Required column names.
+#' @return Invisible TRUE or error.
 #' @export
 heart_assert_required_cols <- function(df, required) {
   miss <- setdiff(required, names(df))

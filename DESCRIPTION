@@ -1,5 +1,5 @@
-Package: heartPrediction
-Type: Package
+Package: heartPredictionR
+Type: Package 
 Title: Heart Disease Prediction with Reproducible Machine Learning Models
 Version: 1.0.0
 Authors@R:
