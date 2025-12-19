@@ -37,3 +37,31 @@ heart_required_cols_default <- function() {
     "FastingBS","RestingECG","MaxHR","ExerciseAngina","Oldpeak","ST_Slope"
   )
 }
+#' @keywords internal
+hp_safe_predict_proba <- function(model_obj, newdata, positive_level) {
+
+  # caret::train / train.recipe: predict(type="prob")
+  if (inherits(model_obj, c("train", "train.recipe"))) {
+    pr <- stats::predict(model_obj, newdata = newdata, type = "prob")
+    pr <- as.data.frame(pr)
+    if (positive_level %in% names(pr)) return(as.numeric(pr[[positive_level]]))
+    return(as.numeric(pr[[1]]))
+  }
+
+  # ranger: must use ranger::predict(data=..., type="response")
+  if (inherits(model_obj, "ranger")) {
+    rp <- ranger::predict(model_obj, data = newdata, type = "response")
+    pred <- rp$predictions
+
+    # probability output is usually a matrix/data.frame with class columns
+    if (is.matrix(pred) || is.data.frame(pred)) {
+      pred <- as.data.frame(pred)
+      if (positive_level %in% names(pred)) return(as.numeric(pred[[positive_level]]))
+      return(as.numeric(pred[[1]]))
+    }
+
+    stop("This ranger model does not return probabilities. It must be trained with probability = TRUE.")
+  }
+
+  stop("Unsupported model class: ", paste(class(model_obj), collapse = ", "))
+}

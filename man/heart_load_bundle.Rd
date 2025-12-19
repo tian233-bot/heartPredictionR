@@ -10,7 +10,8 @@ heart_load_bundle(
 )
 }
 \arguments{
-\item{path}{Optional path to a bundle \code{.rds}. If NULL, load from package extdata.}
+\item{path}{Optional path to a bundle \code{.rds}. If \code{NULL}, the bundle
+is loaded from the installed package extdata directory.}
 
 \item{filename}{Bundle filename inside package extdata (advanced).}
 }
@@ -18,6 +19,13 @@ heart_load_bundle(
 A list (bundle) containing trained models and metadata.
 }
 \description{
-By default the bundle is loaded from \code{extdata} in the installed package.
-You can also provide a custom path to an \code{.rds} bundle file.
+This package ships with a pre-trained model bundle stored under
+\code{inst/extdata/}. After installation, the file is available via
+\code{system.file("extdata", ..., package="heartPredictionR")}.
+}
+\examples{
+# Locate the bundle inside the installed package
+system.file("extdata", "heart_models_RECIPES_STRICT_bundle.rds", package = "heartPredictionR")
+b <- heart_load_bundle()
+names(b)
 }

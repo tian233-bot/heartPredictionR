@@ -1,11 +1,18 @@
 #' Load the pre-trained model bundle shipped with the package
 #'
-#' By default the bundle is loaded from \code{extdata} in the installed package.
-#' You can also provide a custom path to an \code{.rds} bundle file.
+#' This package ships with a pre-trained model bundle stored under
+#' \code{inst/extdata/}. After installation, the file is available via
+#' \code{system.file("extdata", ..., package="heartPredictionR")}.
 #'
-#' @param path Optional path to a bundle \code{.rds}. If NULL, load from package extdata.
+#' @param path Optional path to a bundle \code{.rds}. If \code{NULL}, the bundle
+#'   is loaded from the installed package extdata directory.
 #' @param filename Bundle filename inside package extdata (advanced).
 #' @return A list (bundle) containing trained models and metadata.
+#' @examples
+#' # Locate the bundle inside the installed package
+#' system.file("extdata", "heart_models_RECIPES_STRICT_bundle.rds", package = "heartPredictionR")
+#' b <- heart_load_bundle()
+#' names(b)
 #' @export
 heart_load_bundle <- function(path = NULL,
                               filename = "heart_models_RECIPES_STRICT_bundle.rds") {
@@ -22,22 +29,53 @@ heart_load_bundle <- function(path = NULL,
   readRDS(path)
 }
 
+#' @keywords internal
+hp_safe_predict_proba <- function(model_obj, newdata, positive_level) {
+
+  # caret::train / train.recipe: predict(type="prob")
+  if (inherits(model_obj, c("train", "train.recipe"))) {
+    pr <- stats::predict(model_obj, newdata = newdata, type = "prob")
+    pr <- as.data.frame(pr)
+    if (positive_level %in% names(pr)) return(as.numeric(pr[[positive_level]]))
+    return(as.numeric(pr[[1]]))
+  }
+
+  # ranger: must use ranger::predict(data=..., type="response")
+  if (inherits(model_obj, "ranger")) {
+    if (!requireNamespace("ranger", quietly = TRUE)) {
+      stop("Package 'ranger' is required to predict from a ranger model. Please install it.")
+    }
+    rp <- ranger::predict(model_obj, data = newdata, type = "response")
+    pred <- rp$predictions
+
+    # Probability output is usually a matrix/data.frame with class columns
+    if (is.matrix(pred) || is.data.frame(pred)) {
+      pred <- as.data.frame(pred)
+      if (positive_level %in% names(pred)) return(as.numeric(pred[[positive_level]]))
+      return(as.numeric(pred[[1]]))
+    }
+
+    stop("This ranger model does not return probabilities. It must be trained with probability = TRUE.")
+  }
+
+  stop("Unsupported model class: ", paste(class(model_obj), collapse = ", "))
+}
+
 #' Predict heart disease probability (positive class)
 #'
 #' Supported models:
 #' \itemize{
-#'   \item \code{"topk"}: TopK random forest (recommended deployment model)
-#'   \item \code{"full"}: Full-feature random forest
+#'   \item \code{"topk"}: TopK Random Forest (recommended)
+#'   \item \code{"full"}: Full-feature Random Forest
 #'   \item \code{"logistic"}: Regularised logistic regression baseline
 #' }
 #'
 #' Implementation notes:
 #' \itemize{
-#'   \item Inputs are validated and coerced using \code{heart_coerce_inputs()}.
+#'   \item Input columns are validated using \code{heart_assert_required_cols()}.
+#'   \item Inputs are coerced using \code{heart_coerce_inputs()}.
 #'   \item Engineered features are added using \code{heart_add_features()}.
-#'   \item For \code{"topk"}, your saved model is a \code{caret} \code{train.recipe}
-#'         object, so prediction is done directly via \code{predict()} and the recipe
-#'         is handled internally (no manual \code{bake()} required).
+#'   \item Prediction supports both \code{caret::train/train.recipe} and \code{ranger} models.
 #' }
 #'
 #' @param df New data (data.frame) with required feature columns.
@@ -63,48 +101,34 @@ heart_predict_proba <- function(df,
   df2 <- heart_coerce_inputs(df)
   df2 <- heart_add_features(df2)
 
-  # positive class name (used to pick probability column)
+  # positive class name
   pos <- bundle$positive_level %||% "Presence"
 
-  # predict helper
-  safe_prob <- function(model_obj, newdata) {
-    # suppressWarnings to avoid recipe factor-type warnings during bake/predict
-    pr <- suppressWarnings(stats::predict(model_obj, newdata = newdata, type = "prob"))
-    pr <- as.data.frame(pr)
-    if (pos %in% names(pr)) return(as.numeric(pr[[pos]]))
-    as.numeric(pr[[1]])
-  }
-
   if (model == "logistic") {
-    if (!requireNamespace("glmnet", quietly = TRUE)) {
-      stop("Package 'glmnet' is required for model='logistic'. Please install it.")
-    }
-    return(clamp01(safe_prob(bundle$glm_cv, df2)))
+    # could be caret model or something else; hp_safe_predict_proba will handle caret::train
+    if (is.null(bundle$glm_cv)) stop("Bundle missing glm_cv for model='logistic'.")
+    return(clamp01(hp_safe_predict_proba(bundle$glm_cv, df2, positive_level = pos)))
   }
 
   if (model == "full") {
-    if (!requireNamespace("ranger", quietly = TRUE)) {
-      stop("Package 'ranger' is required for model='full'. Please install it.")
-    }
-    return(clamp01(safe_prob(bundle$rf_full_cv, df2)))
+    if (is.null(bundle$rf_full_cv)) stop("Bundle missing rf_full_cv for model='full'.")
+    return(clamp01(hp_safe_predict_proba(bundle$rf_full_cv, df2, positive_level = pos)))
   }
 
-  # topk (caret train.recipe handles recipe internally)
-  if (!requireNamespace("caret", quietly = TRUE)) {
-    stop("Package 'caret' is required for model='topk'. Please install it.")
-  }
-  clamp01(safe_prob(bundle$rf_top_cv, df2))
+  # topk
+  if (is.null(bundle$rf_top_cv)) stop("Bundle missing rf_top_cv for model='topk'.")
+  clamp01(hp_safe_predict_proba(bundle$rf_top_cv, df2, positive_level = pos))
 }
 
 #' Predict heart disease class label
 #'
-#' This is the coursework-style high-level prediction function:
+#' High-level prediction function:
 #' input = \code{data.frame}, output = predicted class label (factor).
 #'
 #' @param df New data (data.frame) with required feature columns.
 #' @param bundle A bundle from \code{heart_load_bundle()}.
 #' @param model Which model to use: \code{"topk"} (default), \code{"full"}, \code{"logistic"}.
-#' @param threshold Optional numeric threshold. If NULL, uses bundle stored threshold for that model.
+#' @param threshold Optional numeric threshold. If \code{NULL}, uses bundle stored threshold for that model.
 #' @return A factor with levels \code{c(positive, negative)}.
 #' @examples
 #' b <- heart_load_bundle()
@@ -122,10 +146,11 @@ heart_predict <- function(df,
 
   thr <- threshold
   if (is.null(thr)) {
-    thr <- switch(model,
-                  logistic = bundle$thr_glm  %||% 0.5,
-                  full     = bundle$thr_full %||% 0.5,
-                  topk     = bundle$thr_top  %||% 0.5
+    thr <- switch(
+      model,
+      logistic = bundle$thr_glm  %||% 0.5,
+      full     = bundle$thr_full %||% 0.5,
+      topk     = bundle$thr_top  %||% 0.5
     )
   }
 

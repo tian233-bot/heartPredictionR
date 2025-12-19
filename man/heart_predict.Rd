@@ -18,13 +18,13 @@ heart_predict(
 
 \item{model}{Which model to use: \code{"topk"} (default), \code{"full"}, \code{"logistic"}.}
 
-\item{threshold}{Optional numeric threshold. If NULL, uses bundle stored threshold for that model.}
+\item{threshold}{Optional numeric threshold. If \code{NULL}, uses bundle stored threshold for that model.}
 }
 \value{
 A factor with levels \code{c(positive, negative)}.
 }
 \description{
-This is the coursework-style high-level prediction function:
+High-level prediction function:
 input = \code{data.frame}, output = predicted class label (factor).
 }
 \examples{

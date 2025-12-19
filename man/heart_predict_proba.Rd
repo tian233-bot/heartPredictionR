@@ -23,19 +23,18 @@ Numeric vector of positive-class probabilities between 0 and 1.
 \description{
 Supported models:
 \itemize{
-\item \code{"topk"}: TopK random forest (recommended deployment model)
-\item \code{"full"}: Full-feature random forest
+\item \code{"topk"}: TopK Random Forest (recommended)
+\item \code{"full"}: Full-feature Random Forest
 \item \code{"logistic"}: Regularised logistic regression baseline
 }
 }
 \details{
 Implementation notes:
 \itemize{
-\item Inputs are validated and coerced using \code{heart_coerce_inputs()}.
+\item Input columns are validated using \code{heart_assert_required_cols()}.
+\item Inputs are coerced using \code{heart_coerce_inputs()}.
 \item Engineered features are added using \code{heart_add_features()}.
-\item For \code{"topk"}, your saved model is a \code{caret} \code{train.recipe}
-object, so prediction is done directly via \code{predict()} and the recipe
-is handled internally (no manual \code{bake()} required).
+\item Prediction supports both \code{caret::train/train.recipe} and \code{ranger} models.
 }
 }
 \examples{
