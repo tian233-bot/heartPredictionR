@@ -55,6 +55,14 @@ remotes::install_github("tian233-bot/heartPredictionR")
 install.packages("devtools")
 devtools::install_github("tian233-bot/heartPredictionR")
 ```
+If download fails (network / RStudio downloader issues)
+
+On some networks, RStudio’s default downloader may fail to fetch the GitHub tarball.
+In that case, switch to curl and try again:
+```r
+options(download.file.method = "curl")
+remotes::install_github("tian233-bot/heartPredictionR", upgrade = "never", force = TRUE)
+```
 
 Then load the package:
 
