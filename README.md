@@ -72,10 +72,27 @@ Imported packages are listed in DESCRIPTION.
 ```r
 library(heartPredictionR)
 
+# Check the bundle file exists inside the installed package
+system.file("extdata", "heart_models_RECIPES_STRICT_bundle.rds", package = "heartPredictionR")
+
 b <- heart_load_bundle()
 names(b)
 ```
-## 2. Predict one patient (class label)
+## 2. Choose a safe default model
+
+This package may ship multiple models (TopK RF / Full RF / Logistic).
+The code below prefers TopK when available, otherwise falls back to Full RF, then Logistic.
+```r
+pick_model <- function(b) {
+  if (!is.null(b$rf_top_cv)) return("topk")
+  if (!is.null(b$rf_full_cv)) return("full")
+  "logistic"
+}
+
+model <- pick_model(b)
+model
+```
+## 3. Predict one patient (class label)
 
 heart_predict() returns the class label (coursework-style output).
 ```r
@@ -84,15 +101,15 @@ new_pat <- data.frame(
   RestingECG="Normal", MaxHR=172, ExerciseAngina="N", Oldpeak=0.0, ST_Slope="Up"
 )
 
-heart_predict(new_pat, bundle = b, model = "topk")
+heart_predict(new_pat, bundle = b, model = model)
 ```
-## 3. Predict probability of Presence
+## 4. Predict probability of Presence
 
 heart_predict_proba() returns the predicted probability of the positive class.
 ```r
-heart_predict_proba(new_pat, bundle = b, model = "topk")
+heart_predict_proba(new_pat, bundle = b, model = model)
 ```
-## 4. Batch prediction (multiple rows)
+## 5. Batch prediction (multiple rows)
 ```r
 new_patients <- data.frame(
   Age=c(54, 63),
@@ -108,34 +125,30 @@ new_patients <- data.frame(
   ST_Slope=c("Up","Flat")
 )
 
-heart_predict(new_patients, bundle = b, model = "topk")
-heart_predict_proba(new_patients, bundle = b, model = "topk")
+heart_predict(new_patients, bundle = b, model = model)
+heart_predict_proba(new_patients, bundle = b, model = model)
 ```
 
 
 
 # Example Data Shipped with the Package
 
-A small CSV template is included under inst/extdata/ for quick testing.
+This package includes the original dataset CSV for testing:
 ```r
-example_path <- system.file("extdata", "heart_example_input.csv", package = "heartPredictionR")
-example_df <- read.csv(example_path)
+library(heartPredictionR)
 
-head(example_df)
-```
-Run predictions:
-```r
+csv_path <- system.file("extdata", "heart3.csv", package = "heartPredictionR")
+raw <- read.csv(csv_path)
+
+# Keep the 11 required predictors (drop the label if present)
+x <- raw[, c("Age","Sex","ChestPainType","RestingBP","Cholesterol",
+             "FastingBS","RestingECG","MaxHR","ExerciseAngina","Oldpeak","ST_Slope")]
+
 b <- heart_load_bundle()
+model <- if (!is.null(b$rf_top_cv)) "topk" else "full"
 
-pred_class <- heart_predict(example_df, b, model = "topk")
-table(pred_class)
-
-pred_prob <- heart_predict_proba(example_df, b, model = "topk")
-head(pred_prob)
+head(heart_predict_proba(x[1:5, ], bundle = b, model = model))
 ```
-
-
-
 # Input Schema
 
 Required columns (prediction-time schema):
@@ -151,12 +164,10 @@ Required columns (prediction-time schema):
 	- Oldpeak (numeric)
 	- ST_Slope (categorical)
 
-The package automatically adds engineered features for robustness:
+The package may automatically add engineered features for robustness (depending on the shipped bundle / pipeline):
 	- age_decade
 	- high_bp_flag
 	- high_chol_flag
-
-
 
 # Model Bundle and Reproducibility
 
@@ -165,73 +176,90 @@ The package ships with a pre-trained model bundle (`.rds`) and loads it at runti
 Bundle location inside the installed package:
 
 ```r
-system.file("extdata", "heart_models_bundle.rds", package = "heartPredictionR")
+system.file("extdata", "heart_models_RECIPES_STRICT_bundle.rds", package = "heartPredictionR")
 ```
-
-It contains:
-	- trained model objects
-	- the required input schema
-	- factor level dictionary (training-time categories)
+The bundle stores:
+	- trained model objects (TopK RF / Full RF / Logistic, depending on training output)
+	- required input schema (required_cols, factor_levels)
 	- recommended thresholds (OOF-derived)
-	- optional evaluation table (results_df) if included during training
+	- optional evaluation tables if included during training
 
-Load it at runtime using:
-```r
-b <- heart_load_bundle()
-```
+# Model Performance
 
+The figure below summarises test-set performance of three classifiers (Logistic, Full RF, TopK RF), including Accuracy/AUROC/AUPRC and ROC/PR curves.
 
-## Model Performance
+![](inst/extdata/Fig/ROC_PRC.png)
 
-The following figure summarises test-set performance of three classifiers (Logistic, Full RF, TopK RF), including Accuracy/AUROC/AUPRC and ROC curves.
+# Model Evaluation+Calibration(Reproducible Example)
 
-![](extdata/Fig/ROC:PRC.png)
-
-# Model Evaluation+Calibration
-
-If your bundle contains a labelled dataset (e.g., b$test_df with HeartDisease), you can compute summary metrics.
+This section demonstrates evaluation using the packaged CSV (for reproducibility).
+If your bundle also contains a held-out test split, you can use it directly; otherwise you can evaluate on the full dataset for demonstration.
 ```r
 library(heartPredictionR)
+
 b <- heart_load_bundle()
-if (!is.null(b$test_df) && "HeartDisease" %in% names(b$test_df)) {
-  df <- b$test_df
-  y  <- df$HeartDisease
-  x  <- df
-  x$HeartDisease <- NULL
-  prob <- heart_predict_proba(x, b, model = "topk")
+model <- if (!is.null(b$rf_top_cv)) "topk" else "full"
 
-  # Evaluate using the stored threshold
-  thr <- b$thr_top
-  ev  <- heart_eval_threshold(y_true = y, prob_pos = prob, threshold = thr, positive_level = b$positive_level)
+csv_path <- system.file("extdata", "heart3.csv", package = "heartPredictionR")
+raw <- read.csv(csv_path)
 
-  ev
-  # Calibration bins + ECE
-  cal <- heart_calibration(y_true = y, prob_pos = prob, positive_level = b$positive_level, bins = 10)
-  cal$ece
-  cal$cal_df
+y <- raw$HeartDisease
+x <- raw[, c("Age","Sex","ChestPainType","RestingBP","Cholesterol",
+             "FastingBS","RestingECG","MaxHR","ExerciseAngina","Oldpeak","ST_Slope")]
+
+prob <- heart_predict_proba(x, bundle = b, model = model)
+
+# pick the matching stored threshold if available
+thr <- if (model == "topk") (b$thr_top %||% 0.5) else if (model == "full") (b$thr_full %||% 0.5) else (b$thr_glm %||% 0.5)
+
+ev <- heart_eval_threshold(
+  y_true = y,
+  prob_pos = prob,
+  threshold = thr,
+  positive_level = b$positive_level %||% "Presence"
+)
+ev
+
+# Calibration bins + ECE
+  cal <- heart_calibration(
+  y_true = y,
+  prob_pos = prob,
+  positive_level = b$positive_level %||% "Presence",
+  bins = 10
+)
+
+cal$ece
+head(cal$cal_df)
+```
+Optional ROC / PR curves (only if you have these packages installed):
+```r
+if (requireNamespace("pROC", quietly = TRUE)) {
+  y_bin <- ifelse(as.character(y) %in% c("1","Presence"), 1, 0)
+  roc_obj <- pROC::roc(y_bin, prob, quiet = TRUE)
+  pROC::auc(roc_obj)
+}
+
+if (requireNamespace("PRROC", quietly = TRUE)) {
+  y_bin <- ifelse(as.character(y) %in% c("1","Presence"), 1, 0)
+  pr <- PRROC::pr.curve(scores.class0 = prob[y_bin == 1],
+                        scores.class1 = prob[y_bin == 0],
+                        curve = TRUE)
+  pr$auc.integral
 }
 ```
 
-
-
 # Model Interpretation 
 
-Permutation feature importance for a Random Forest model:
-Note: Feature-importance utilities rely on `vip` and require a fitted model object supported by `vip::vi()` (e.g., `ranger`).
+Permutation feature importance for a Random Forest model (requires vip and a supported fitted model object, e.g. ranger):
 ```r
 library(heartPredictionR)
 
 b <- heart_load_bundle()
 
-# Feature importance requires vip and a model supported by vip::vi() (e.g., ranger).
 if (requireNamespace("vip", quietly = TRUE) && !is.null(b$rf_full_cv)) {
-
   rf_fit <- b$rf_full_cv
-
-  # caret models often store the underlying model at $finalModel
   ranger_model <- rf_fit$finalModel
   if (!is.null(ranger_model)) {
-
     imp <- heart_importance_rf(ranger_model, top_n = 15)
     heart_plot_importance(imp, title = "Full RF Feature Importance", ylab = "Permutation importance")
   }
