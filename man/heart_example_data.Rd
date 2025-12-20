@@ -7,18 +7,21 @@
 heart_example_data(include_outcome = TRUE, n = NULL)
 }
 \arguments{
-\item{include_outcome}{Logical. If TRUE, keep \code{HeartDisease} if present.}
+\item{include_outcome}{Logical. If TRUE, keep HeartDisease if present.}
 
-\item{n}{Optional integer. If provided, return the first \code{n} rows.}
+\item{n}{Optional integer. If provided, return the first n rows.}
 }
 \value{
 A data.frame.
 }
 \description{
-This helper loads the example CSV shipped under \code{inst/extdata/heart3.csv}.
-It is useful for quick testing and for examples that must run during \code{R CMD check}.
+Loads a small example CSV from inst/extdata/.
+By default it looks for heart_example_input.csv (predictors only).
+Falls back to heart3.csv if present.
 }
 \examples{
+b <- heart_load_bundle()
 newdata <- heart_example_data(include_outcome = FALSE, n = 5)
-head(newdata)
+p <- heart_predict_proba(newdata, bundle = b, model = "topk")
+head(p)
 }

@@ -8,24 +8,43 @@ clamp01 <- function(p) pmin(1, pmax(0, p))
 
 #' Read example dataset shipped with the package
 #'
-#' This helper loads the example CSV shipped under \code{inst/extdata/heart3.csv}.
-#' It is useful for quick testing and for examples that must run during \code{R CMD check}.
+#' Loads a small example CSV from inst/extdata/.
+#' By default it looks for heart_example_input.csv (predictors only).
+#' Falls back to heart3.csv if present.
 #'
-#' @param include_outcome Logical. If TRUE, keep \code{HeartDisease} if present.
-#' @param n Optional integer. If provided, return the first \code{n} rows.
+#' @param include_outcome Logical. If TRUE, keep HeartDisease if present.
+#' @param n Optional integer. If provided, return the first n rows.
 #' @return A data.frame.
-#' @examples
-#' newdata <- heart_example_data(include_outcome = FALSE, n = 5)
-#' head(newdata)
 #' @export
+#' @examples
+#' b <- heart_load_bundle()
+#' newdata <- heart_example_data(include_outcome = FALSE, n = 5)
+#' p <- heart_predict_proba(newdata, bundle = b, model = "topk")
+#' head(p)
 heart_example_data <- function(include_outcome = TRUE, n = NULL) {
-  p <- system.file("extdata", "heart3.csv", package = "heartPredictionR")
-  if (p == "") stop("Example dataset not found in the installed package.")
+
+  # Prefer a small predictors-only template for reliable examples
+  candidates <- c("heart_example_input.csv", "heart3.csv")
+
+  p <- ""
+  for (fn in candidates) {
+    pp <- system.file("extdata", fn, package = "heartPredictionR")
+    if (nzchar(pp) && file.exists(pp)) { p <- pp; break }
+  }
+
+  if (!nzchar(p)) {
+    stop(
+      "Example dataset not found in the installed package.\n",
+      "Expected one of: inst/extdata/heart_example_input.csv or inst/extdata/heart3.csv"
+    )
+  }
+
   df <- utils::read.csv(p, stringsAsFactors = FALSE)
 
   if (!isTRUE(include_outcome) && "HeartDisease" %in% names(df)) {
     df$HeartDisease <- NULL
   }
+
   if (!is.null(n)) df <- utils::head(df, n)
   df
 }
