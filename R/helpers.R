@@ -14,6 +14,9 @@ clamp01 <- function(p) pmin(1, pmax(0, p))
 #' @param include_outcome Logical. If TRUE, keep \code{HeartDisease} if present.
 #' @param n Optional integer. If provided, return the first \code{n} rows.
 #' @return A data.frame.
+#' @examples
+#' newdata <- heart_example_data(include_outcome = FALSE, n = 5)
+#' head(newdata)
 #' @export
 heart_example_data <- function(include_outcome = TRUE, n = NULL) {
   p <- system.file("extdata", "heart3.csv", package = "heartPredictionR")
@@ -37,6 +40,7 @@ heart_required_cols_default <- function() {
     "FastingBS","RestingECG","MaxHR","ExerciseAngina","Oldpeak","ST_Slope"
   )
 }
+
 #' @keywords internal
 hp_safe_predict_proba <- function(model_obj, newdata, positive_level) {
 
@@ -50,6 +54,9 @@ hp_safe_predict_proba <- function(model_obj, newdata, positive_level) {
 
   # ranger: must use ranger::predict(data=..., type="response")
   if (inherits(model_obj, "ranger")) {
+    if (!requireNamespace("ranger", quietly = TRUE)) {
+      stop("Package 'ranger' is required to predict from a ranger model. Please install it.")
+    }
     rp <- ranger::predict(model_obj, data = newdata, type = "response")
     pred <- rp$predictions
 

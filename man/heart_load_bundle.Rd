@@ -24,8 +24,7 @@ This package ships with a pre-trained model bundle stored under
 \code{system.file("extdata", ..., package="heartPredictionR")}.
 }
 \examples{
-# Locate the bundle inside the installed package
-system.file("extdata", "heart_models_RECIPES_STRICT_bundle.rds", package = "heartPredictionR")
+# Load bundle from installed package
 b <- heart_load_bundle()
 names(b)
 }

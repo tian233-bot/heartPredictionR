@@ -23,10 +23,10 @@ Compute standard classification metrics at a fixed threshold
 }
 \examples{
 b <- heart_load_bundle()
-df <- heart_example_data(include_outcome = TRUE, n = 50)
-y <- factor(ifelse(df$HeartDisease \%in\% c(1,"1","Presence"), b$positive_level, b$negative_level),
+dat <- heart_example_data(include_outcome = TRUE, n = 80)
+y <- factor(ifelse(dat$HeartDisease == 1, b$positive_level, b$negative_level),
             levels = c(b$positive_level, b$negative_level))
-x <- df; x$HeartDisease <- NULL
-p <- heart_predict_proba(x, b, model="topk")
+x <- dat; x$HeartDisease <- NULL
+p <- heart_predict_proba(x, b, model = "topk")
 heart_eval_threshold(y, p, threshold = b$thr_top \%||\% 0.5, positive_level = b$positive_level)
 }

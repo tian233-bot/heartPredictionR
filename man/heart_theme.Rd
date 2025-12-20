@@ -15,3 +15,6 @@ ggplot theme.
 \description{
 Package ggplot theme
 }
+\examples{
+heart_theme()
+}

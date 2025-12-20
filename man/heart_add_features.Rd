@@ -23,3 +23,9 @@ Suggests three engineered features that are simple, interpretable, and stable:
 \details{
 This function does not modify your original variables beyond numeric coercion.
 }
+\examples{
+b <- heart_load_bundle()
+newdata <- heart_example_data(include_outcome = FALSE, n = 3)
+out <- heart_add_features(newdata)
+out[, c("Age","RestingBP","Cholesterol","age_decade","high_bp_flag","high_chol_flag")]
+}

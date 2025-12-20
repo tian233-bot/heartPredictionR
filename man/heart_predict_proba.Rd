@@ -39,7 +39,14 @@ Implementation notes:
 }
 \examples{
 b <- heart_load_bundle()
-x <- heart_example_data(include_outcome = FALSE, n = 5)
-p <- heart_predict_proba(x, bundle = b, model = "topk")
-head(p)
+newdata <- heart_example_data(include_outcome = FALSE, n = 5)
+
+# Predict probability (TopK recommended)
+p_topk <- heart_predict_proba(newdata, bundle = b, model = "topk")
+p_topk
+
+# Compare with other models
+p_full <- heart_predict_proba(newdata, bundle = b, model = "full")
+p_log  <- heart_predict_proba(newdata, bundle = b, model = "logistic")
+cbind(p_topk, p_full, p_log)
 }

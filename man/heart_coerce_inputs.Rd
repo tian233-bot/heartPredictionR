@@ -25,3 +25,9 @@ A tibble with coerced columns.
 Numeric columns are coerced to numeric (hard fail if NA is introduced).
 Categorical columns are coerced to character. (The model/recipe will handle factorisation.)
 }
+\examples{
+newdata <- heart_example_data(include_outcome = FALSE, n = 3)
+newdata$Age <- as.character(newdata$Age) # messy input
+x <- heart_coerce_inputs(newdata)
+str(x)
+}

@@ -18,3 +18,7 @@ A data.frame.
 This helper loads the example CSV shipped under \code{inst/extdata/heart3.csv}.
 It is useful for quick testing and for examples that must run during \code{R CMD check}.
 }
+\examples{
+newdata <- heart_example_data(include_outcome = FALSE, n = 5)
+head(newdata)
+}

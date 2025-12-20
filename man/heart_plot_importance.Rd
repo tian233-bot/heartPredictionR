@@ -19,3 +19,11 @@ ggplot object.
 \description{
 Plot importance bar chart
 }
+\examples{
+b <- heart_load_bundle()
+if (requireNamespace("vip", quietly = TRUE)) {
+  imp <- heart_importance_rf(b$rf_top_cv, top_n = 10)
+  p <- heart_plot_importance(imp, title = "TopK RF Importance")
+  p
+}
+}

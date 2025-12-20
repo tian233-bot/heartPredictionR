@@ -27,3 +27,10 @@ tibble(Variable, Importance)
 \description{
 Aggregate one-hot dummy importances back to raw variables (logistic model)
 }
+\examples{
+b <- heart_load_bundle()
+if (requireNamespace("stringr", quietly = TRUE)) {
+  imp <- heart_importance_logistic(b$glm_cv, top_n = 10, how = "sum")
+  imp
+}
+}

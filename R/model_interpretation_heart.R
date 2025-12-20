@@ -3,6 +3,12 @@
 #' @param ranger_model A fitted ranger model.
 #' @param top_n Top N variables.
 #' @return tibble(Variable, Importance)
+#' @examples
+#' b <- heart_load_bundle()
+#' if (requireNamespace("vip", quietly = TRUE)) {
+#'   imp <- heart_importance_rf(b$rf_top_cv, top_n = 10)
+#'   imp
+#' }
 #' @export
 heart_importance_rf <- function(ranger_model, top_n = 20) {
   if (!requireNamespace("vip", quietly = TRUE)) {
@@ -15,24 +21,6 @@ heart_importance_rf <- function(ranger_model, top_n = 20) {
     dplyr::mutate(Variable = forcats::fct_reorder(.data$Variable, .data$Importance))
 }
 
-#' Extract glmnet coefficient importance (absolute coefficients at best lambda)
-#'
-#' @param glm_caret A caret::train object fitted with method='glmnet'.
-#' @return tibble(Feature, Coef, Importance)
-#' @keywords internal
-heart_glmnet_coef_importance <- function(glm_caret) {
-  best_lambda <- glm_caret$bestTune$lambda
-  co <- as.matrix(stats::coef(glm_caret$finalModel, s = best_lambda))
-
-  tibble::tibble(
-    Feature = rownames(co),
-    Coef    = as.numeric(co[, 1])
-  ) |>
-    dplyr::filter(.data$Feature != "(Intercept)") |>
-    dplyr::mutate(Importance = abs(.data$Coef)) |>
-    dplyr::arrange(dplyr::desc(.data$Importance))
-}
-
 #' Aggregate one-hot dummy importances back to raw variables (logistic model)
 #'
 #' @param glm_caret A caret::train(glmnet) object.
@@ -40,6 +28,12 @@ heart_glmnet_coef_importance <- function(glm_caret) {
 #' @param cat_prefix Categorical prefixes to aggregate (e.g. Sex_*).
 #' @param how Aggregation method: sum or max.
 #' @return tibble(Variable, Importance)
+#' @examples
+#' b <- heart_load_bundle()
+#' if (requireNamespace("stringr", quietly = TRUE)) {
+#'   imp <- heart_importance_logistic(b$glm_cv, top_n = 10, how = "sum")
+#'   imp
+#' }
 #' @export
 heart_importance_logistic <- function(
     glm_caret,
@@ -79,6 +73,13 @@ heart_importance_logistic <- function(
 #' @param title Plot title.
 #' @param ylab y-axis label.
 #' @return ggplot object.
+#' @examples
+#' b <- heart_load_bundle()
+#' if (requireNamespace("vip", quietly = TRUE)) {
+#'   imp <- heart_importance_rf(b$rf_top_cv, top_n = 10)
+#'   p <- heart_plot_importance(imp, title = "TopK RF Importance")
+#'   p
+#' }
 #' @export
 heart_plot_importance <- function(imp_tbl, title, ylab = "Importance") {
   ggplot2::ggplot(imp_tbl, ggplot2::aes(x = .data$Variable, y = .data$Importance, fill = .data$Importance)) +
@@ -92,6 +93,8 @@ heart_plot_importance <- function(imp_tbl, title, ylab = "Importance") {
 #'
 #' @param base_size base font size.
 #' @return ggplot theme.
+#' @examples
+#' heart_theme()
 #' @export
 heart_theme <- function(base_size = 14) {
   ggplot2::theme_minimal(base_size = base_size) +
@@ -105,4 +108,22 @@ heart_theme <- function(base_size = 14) {
       legend.position    = "right",
       legend.title       = ggplot2::element_blank()
     )
+}
+
+#' Extract glmnet coefficient importance (absolute coefficients at best lambda)
+#'
+#' @param glm_caret A caret::train object fitted with method='glmnet'.
+#' @return tibble(Feature, Coef, Importance)
+#' @keywords internal
+heart_glmnet_coef_importance <- function(glm_caret) {
+  best_lambda <- glm_caret$bestTune$lambda
+  co <- as.matrix(stats::coef(glm_caret$finalModel, s = best_lambda))
+
+  tibble::tibble(
+    Feature = rownames(co),
+    Coef    = as.numeric(co[, 1])
+  ) |>
+    dplyr::filter(.data$Feature != "(Intercept)") |>
+    dplyr::mutate(Importance = abs(.data$Coef)) |>
+    dplyr::arrange(dplyr::desc(.data$Importance))
 }

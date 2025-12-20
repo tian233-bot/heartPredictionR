@@ -29,6 +29,6 @@ input = \code{data.frame}, output = predicted class label (factor).
 }
 \examples{
 b <- heart_load_bundle()
-x <- heart_example_data(include_outcome = FALSE, n = 5)
-heart_predict(x, bundle = b, model = "topk")
+newdata <- heart_example_data(include_outcome = FALSE, n = 5)
+heart_predict(newdata, bundle = b, model = "topk")
 }

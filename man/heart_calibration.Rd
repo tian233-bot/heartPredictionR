@@ -23,11 +23,11 @@ Calibration bins and Expected Calibration Error (ECE)
 }
 \examples{
 b <- heart_load_bundle()
-df <- heart_example_data(include_outcome = TRUE, n = 50)
-y <- factor(ifelse(df$HeartDisease \%in\% c(1,"1","Presence"), b$positive_level, b$negative_level),
+dat <- heart_example_data(include_outcome = TRUE, n = 80)
+y <- factor(ifelse(dat$HeartDisease == 1, b$positive_level, b$negative_level),
             levels = c(b$positive_level, b$negative_level))
-x <- df; x$HeartDisease <- NULL
-p <- heart_predict_proba(x, b, model="topk")
+x <- dat; x$HeartDisease <- NULL
+p <- heart_predict_proba(x, b, model = "topk")
 out <- heart_calibration(y, p, positive_level = b$positive_level, bins = 10)
 out$ece
 head(out$cal_df)

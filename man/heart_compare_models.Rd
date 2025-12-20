@@ -20,9 +20,11 @@ compact performance table at bundle-recommended thresholds.
 }
 \examples{
 b <- heart_load_bundle()
-df <- heart_example_data(include_outcome = TRUE, n = 100)
+dat <- heart_example_data(include_outcome = TRUE, n = 100)
+
 # Convert HeartDisease (0/1) to Presence/Absence for evaluation:
-df$HeartDisease <- ifelse(df$HeartDisease == 1, b$positive_level, b$negative_level)
-df$HeartDisease <- factor(df$HeartDisease, levels = c(b$positive_level, b$negative_level))
-heart_compare_models(df, bundle = b)
+dat$HeartDisease <- ifelse(dat$HeartDisease == 1, b$positive_level, b$negative_level)
+dat$HeartDisease <- factor(dat$HeartDisease, levels = c(b$positive_level, b$negative_level))
+
+heart_compare_models(dat, bundle = b)
 }

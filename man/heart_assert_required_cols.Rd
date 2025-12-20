@@ -17,3 +17,8 @@ Invisible TRUE or error.
 \description{
 Validate that required columns exist
 }
+\examples{
+b <- heart_load_bundle()
+newdata <- heart_example_data(include_outcome = FALSE, n = 1)
+heart_assert_required_cols(newdata, b$required_cols)
+}
