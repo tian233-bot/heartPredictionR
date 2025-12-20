@@ -196,7 +196,7 @@ The bundle stores:
 
 The figure below summarises test-set performance of three classifiers (Logistic, Full RF, TopK RF), including Accuracy/AUROC/AUPRC and ROC/PR curves.
 
-![](inst/extdata/Fig/ROC_PRC.png)
+![](inst/extdata/Fig/ROC_PRC)
 
 # Model Evaluation+Calibration(Reproducible Example)
 
